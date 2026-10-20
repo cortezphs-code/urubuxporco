@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Corrida Maluca Live — Urubu do Flow vs Porco</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Chakra+Petch:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-blue-top: #0f2547;
+      --bg-blue-mid: #1a447c;
+      --fla-red: #e11d2a;
+      --fla-dark: #7f0912;
+      --pal-green: #16a34a;
+      --pal-dark: #075928;
+      --gold: #facc15;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #060b14;
+      color: #fff;
+      font-family: 'Chakra Petch', system-ui, -apple-system, sans-serif;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pixel-font {
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    /* Container 9:16 que ocupa 100% da tela no celular e fica centralizado no PC */
+    .phone-frame {
+      position: relative;
+      width: 100vw;
+      height: 100dvh;
+      max-width: calc(100dvh * 9 / 16);
+      background: linear-gradient(180deg, #102a52 0%, #1c4c88 45%, #163b6b 100%);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+    }
+
+    @media (max-width: 600px) {
+      .phone-frame {
+        max-width: 100vw;
+      }
+    }
+
+    /* TOPO: Título + Barras de Progresso */
+    .top-header {
+      padding: 8px 10px 4px;
+      background: linear-gradient(180deg, rgba(8, 19, 38, 0.95) 0%, rgba(15, 37, 71, 0.85) 100%);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.14);
+      z-index: 10;
+    }
+
+    .title-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .title-text {
+      font-size: clamp(13px, 2.3vh, 18px);
+      letter-spacing: 1px;
+      color: #ffffff;
+      text-shadow: 2px 2px 0px #000;
+      text-align: center;
+      flex: 1;
+    }
+
+    .top-btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .top-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Painel das 2 Barras de Corrida */
+    .leaderboard-box {
+      background: rgba(11, 25, 48, 0.92);
+      border: 2px solid rgba(105, 148, 209, 0.45);
+      border-radius: 12px;
+      padding: 7px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+    }
+
+    .runner-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 28px;
+    }
+
+    .rank-badge {
+      width: 26px;
+      height: 24px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 900;
+      color: #111;
+      flex-shrink: 0;
+      box-shadow: 0 2px 0 rgba(0,0,0,0.5);
+    }
+
+    .rank-1 {
+      background: linear-gradient(180deg, #fde047 0%, #eab308 100%);
+    }
+    .rank-2 {
+      background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%);
+    }
+
+    .runner-num {
+      font-size: 12px;
+      width: 28px;
+      text-align: center;
+      font-weight: 900;
+      flex-shrink: 0;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 11px;
+      background: #233554;
+      border-radius: 6px;
+      position: relative;
+      overflow: visible;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0.15s ease-out;
+      position: relative;
+    }
+
+    .bar-fill.fla {
+      background: linear-gradient(90deg, #991b1b 0%, #ef4444 100%);
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+    }
+
+    .bar-fill.pal {
+      background: linear-gradient(90deg, #15803d 0%, #22c55e 100%);
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+    }
+
+    .bar-avatar {
+      position: absolute;
+      right: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #0f172a;
+      border: 2px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.6);
+    }
+
+    .runner-stats {
+      width: 58px;
+      text-align: right;
+      flex-shrink: 0;
+      line-height: 1.05;
+    }
+
+    .stat-pct {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000;
+    }
+
+    .stat-speed {
+      font-size: 9px;
+      font-weight: 700;
+      color: #facc15;
+      letter-spacing: 0.3px;
+    }
+
+    /* SEÇÃO CENTRAL: Presentes + Cartões DIGITE 10 / 22 */
+    .interaction-zone {
+      display: grid;
+      grid-template-columns: 1fr 1.45fr 1.45fr 1fr;
+      gap: 5px;
+      padding: 8px 8px 6px;
+      align-items: stretch;
+      z-index: 10;
+    }
+
+    .gifts-col {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 3px;
+    }
+
+    .gift-item {
+      background: rgba(10, 25, 50, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      padding: 3px 2px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gift-item:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .gift-item:active {
+      transform: scale(0.92);
+    }
+
+    .gift-icon {
+      font-size: clamp(14px, 2.2vh, 20px);
+      line-height: 1.1;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+    }
+
+    .gift-label {
+      font-size: clamp(6.5px, 0.95vh, 8.5px);
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #dbeafe;
+      text-shadow: 1px 1px 0 #000;
+      line-height: 1.05;
+      margin-top: 1px;
+    }
+
+    /* Cartões Principais DIGITE 10 / DIGITE 22 */
+    .vote-card {
+      border-radius: 14px;
+      padding: 8px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.45), inset 0 2px 3px rgba(255, 255, 255, 0.35);
+      transition: transform 0.08s ease;
+    }
+
+    .vote-card:active {
+      transform: scale(0.95);
+    }
+
+    .vote-card.fla-card {
+      background: linear-gradient(180deg, #ef233c 0%, #b91c1c 60%, #7f1d1d 100%);
+      border: 3px solid #450a0a;
+    }
+
+    .vote-card.pal-card {
+      background: linear-gradient(180deg, #22c55e 0%, #15803d 60%, #14532d 100%);
+      border: 3px solid #052e16;
+    }
+
+    .vote-top {
+      font-size: clamp(9px, 1.4vh, 12px);
+      color: #fff;
+      text-shadow: 2px 2px 0 #000;
+      letter-spacing: 0.5px;
+    }
+
+    .vote-number {
+      font-size: clamp(26px, 4.5vh, 38px);
+      margin: 4px 0;
+      line-height: 1;
+      text-shadow: 3px 3px 0 #000, -1px -1px 0 #000;
+    }
+
+    .fla-card .vote-number {
+      color: #ffffff;
+    }
+
+    .pal-card .vote-number {
+      color: #fde047;
+    }
+
+    .vote-sub {
+      font-size: clamp(7.5px, 1.15vh, 10px);
+      color: #e2e8f0;
+      text-shadow: 1px 1px 0 #000;
+      text-align: center;
+      line-height: 1.35;
+    }
+
+    .vote-name {
+      font-size: clamp(11px, 1.8vh, 15px);
+      color: #fff;
+      text-shadow: 2px 2px 0 #000;
+      display: block;
+      margin: 2px 0;
+    }
+
+    /* Ícone de Espadas Cruzadas entre os cartões */
+    .swords-divider {
+      position: absolute;
+      right: -13px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 15;
+      font-size: 18px;
+      filter: drop-shadow(0 2px 3px #000);
+      pointer-events: none;
+    }
+
+    /* ÁREA DO ESTÁDIO E PISTA DE CORRIDA (CANVAS) */
+    .stadium-stage {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      border-top: 2px solid #0f172a;
+    }
+
+    #raceCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Lista de Comentários Recentes (Canto Superior Esquerdo do Estádio, igual ao print) */
+    .chat-feed-overlay {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 58%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      pointer-events: none;
+      z-index: 12;
+    }
+
+    .chat-pill {
+      background: rgba(9, 20, 38, 0.88);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: clamp(9px, 1.3vh, 11px);
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 1px 1px 0 #000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+      animation: slideInLeft 0.18s ease-out;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-pill.fla-pill {
+      border: 1.5px solid #ef4444;
+      box-shadow: 0 0 6px rgba(239, 68, 68, 0.35);
+    }
+
+    .chat-pill.pal-pill {
+      border: 1.5px solid #22c55e;
+      box-shadow: 0 0 6px rgba(34, 197, 94, 0.35);
+    }
+
+    @keyframes slideInLeft {
+      from { transform: translateX(-25px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Status da Live no Canto Superior Direito do Estádio */
+    .live-status-tag {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      padding: 3px 7px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #e2e8f0;
+      z-index: 12;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
+      animation: pulseDot 1.2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    /* Banner Central de Evento / Power-up */
+    .event-toast {
+      position: absolute;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      border: 2px solid #facc15;
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #fde047;
+      text-shadow: 1px 1px 0 #000;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      white-space: nowrap;
+    }
+    .event-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) scale(1.05);
+    }
+
+    /* RODAPÉ VERDE (Vantagem + Participantes, igual ao print) */
+    .bottom-telemetry {
+      background: linear-gradient(180deg, #15803d 0%, #166534 100%);
+      border-top: 2px solid #4ade80;
+      padding: 6px 12px;
+      text-align: center;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .advantage-text {
+      font-size: clamp(11px, 1.6vh, 14px);
+      color: #dcfce7;
+      text-shadow: 1px 1px 0 #052e16;
+      letter-spacing: 0.8px;
+    }
+
+    .participants-text {
+      font-size: clamp(9px, 1.2vh, 11px);
+      color: #86efac;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    /* BARRA DE SIMULAÇÃO DE CHAT NO RODAPÉ (Pode ser ocultada para a Live) */
+    .sim-bar {
+      background: #090d16;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 25;
+    }
+
+    .sim-bar.hidden {
+      display: none;
+    }
+
+    .sim-input {
+      flex: 1;
+      background: #161f33;
+      border: 1px solid #334155;
+      color: #fff;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      font-weight: 700;
+      outline: none;
+    }
+
+    .sim-input:focus {
+      border-color: #ef4444;
+    }
+
+    .sim-send-btn {
+      background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+      border: none;
+      color: #fff;
+      font-weight: 800;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    /* Botão Flutuante Discreto quando a barra de simulação está oculta */
+    .restore-hud-btn {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.5);
+      color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 13px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 30;
+    }
+
+    /* MODAL DE VENCEDOR DA CORRIDA */
+    .winner-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 11, 22, 0.88);
+      backdrop-filter: blur(5px);
+      z-index: 40;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .winner-overlay.active {
+      display: flex;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .winner-card {
+      background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+      border: 3px solid #facc15;
+      border-radius: 20px;
+      padding: 22px 18px;
+      width: 90%;
+      max-width: 340px;
+      box-shadow: 0 0 35px rgba(250, 204, 21, 0.4);
+    }
+
+    /* MODAL DE CONFIGURAÇÃO / CONEXÃO TIKTOK */
+    .settings-modal {
+      position: absolute;
+      inset: 0;
+      background: rgba(5, 10, 20, 0.92);
+      backdrop-filter: blur(6px);
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .settings-modal.active {
+      display: flex;
+    }
+
+    .settings-box {
+      background: #111c30;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 16px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .settings-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .settings-label {
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="phone-frame" id="phoneFrame">
+    <!-- TOPO: Título e Barras de Progresso -->
+    <div class="top-header">
+      <div class="title-bar">
+        <button class="top-btn" id="btnToggleBots" title="Ativar/Pausar Torcida Automática">
+          🤖 <span id="botStatusText">Bots: ON</span>
+        </button>
+        <div class="title-text pixel-font">CORRIDA MALUCA</div>
+        <button class="top-btn" id="btnOpenSettings" title="Conectar TikTok Live & Ajustes">
+          ⚙️ Live
+        </button>
+      </div>
+
+      <!-- Placar de Barras 1º e 2º Lugar -->
+      <div class="leaderboard-box" id="leaderboardBox">
+        <!-- Linha Urubu -->
+        <div class="runner-row" id="rowFla">
+          <div class="rank-badge rank-1 pixel-font" id="rankFla">1º</div>
+          <div class="runner-num pixel-font" style="color: #ef4444;">10</div>
+          <div class="bar-track">
+            <div class="bar-fill fla" id="barFla" style="width: 12%;">
+              <div class="bar-avatar" title="Urubu do Flow">🦅</div>
+            </div>
+          </div>
+          <div class="runner-stats">
+            <div class="stat-pct pixel-font" id="pctFla">12%</div>
+            <div class="stat-speed" id="spdFla">62 KM/H</div>
+          </div>
+        </div>
+
+        <!-- Linha Porco -->
+        <div class="runner-row" id="rowPal">
+          <div class="rank-badge rank-2 pixel-font" id="rankPal">2º</div>
+          <div class="runner-num pixel-font" style="color: #22c55e;">22</div>
+          <div class="bar-track">
+            <div class="bar-fill pal" id="barPal" style="width: 10%;">
+              <div class="bar-avatar" title="Porco">🐷</div>
+            </div>
+          </div>
+          <div class="runner-stats">
+            <div class="stat-pct pixel-font" id="pctPal">10%</div>
+            <div class="stat-speed" id="spdPal">60 KM/H</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEIO: Presentes Laterais + Cartões DIGITE 10 e DIGITE 22 -->
+    <div class="interaction-zone">
+      <!-- Coluna Presentes Urubu (Esquerda) -->
+      <div class="gifts-col">
+        <div class="gift-item" onclick="triggerPowerup('fla', 'impulso', 'Torcedor_FLA')">
+          <div class="gift-icon">🌹</div>
+          <div class="gift-label">IMPULSO URUBU</div>
+        </div>
+        <div class="gift-item" onclick="triggerPowerup('fla', 'avanco', 'Torcedor_FLA')">
+          <div class="gift-icon">🫶</div>
+          <div class="gift-label">AVANÇO URUBU</div>
+        </div>
+        <div class="gift-item" onclick="triggerPowerup('fla', 'cansaco', 'Torcedor_FLA')">
+          <div class="gift-icon">🤢</div>
+          <div class="gift-label">CANSAÇO PORCO</div>
+        </div>
+        <div class="gift-item" onclick="triggerPowerup('fla', 'super', 'Torcedor_FLA')">
+          <div class="gift-icon">🔥</div>
+          <div class="gift-label">ARRANCADA BH27</div>
+        </div>
+        <div class="gift-item" onclick="triggerPowerup('fla', 'escudo', 'Torcedor_FLA')">
+          <div class="gift-icon">💎</div>
+          <div class="gift-label">TROPEÇO + ESCUDO</div>
+        </div>
+      </div>
+
+      <!-- Cartão Vermelho: DIGITE 10 PARA URUBU CORRER -->
+      <div class="vote-card fla-card" onclick="handleVote('fla', 'VOCÊ (TOQUE)')">
+        <div class="vote-top pixel-font">DIGITE</div>
+        <div class="vote-number pixel-font">10</div>
+        <div class="vote-sub pixel-font">
+          PARA
+          <span class="vote-name">URUBU</span>
+          CORRER
+        </div>
+        <div class="swords-divider">⚔️</div>
+      </div>
+
+      <!-- Cartão Verde: DIGITE 22 PARA PORCO CORRER -->
+      <div class="vote-card pal-card" onclick="handleVote('pal', 'VOCÊ (TOQUE)')">
+        <div class="vote-top pixel-font">DIGITE</div>
+        <div class="vote-number pixel-font">22</div>
+        <div class="vote-sub pixel-font">
+          PARA
+          <span class="vote-name">PORCO</span>
+          CORRER
+        </div>
+      </div>
+
+      <!-- Coluna Presentes Porco (Direita) -->
+      <div class="gifts-col">
+        <div class="gift-item" onclick="triggerPowerup('pal', 'impulso', 'Torcedor_PAL')">
+          <div class="gift-icon">🌼</div>
+          <div class="gift-label">IMPULSO PORCO</div>
+        </div>
+        <div class="gift-item" onclick="triggerPowerup('pal', 'avanco', 'Torcedor_PAL')">
+          <div class="gift-icon">🫶</div>
+          <div class="gift-label">AVANÇO PORCO</div>
+        </div>
+        <div class="gift-item" onclick="triggerPowerup('pal', 'cansaco', 'Torcedor_PAL')">
+          <div class="gift-icon">💗</div>
+          <div class="gift-label">CANSAÇO URUBU</div>
+        </div>
+        <div class="gift-item" onclick="triggerPowerup('pal', 'super', 'Torcedor_PAL')">
+          <div class="gift-icon">⚡</div>
+          <div class="gift-label">SUPER ARRANCADA</div>
+        </div>
+        <div class="gift-item" onclick="triggerPowerup('pal', 'escudo', 'Torcedor_PAL')">
+          <div class="gift-icon">🛡️</div>
+          <div class="gift-label">TROPEÇO + ESCUDO</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PISTA DE ATLETISMO E ARQUIBANCADA (CANVAS) -->
+    <div class="stadium-stage">
+      <!-- Lista de quem comentou ao vivo -->
+      <div class="chat-feed-overlay" id="chatFeed"></div>
+
+      <!-- Tag Live Conectada -->
+      <div class="live-status-tag">
+        <span class="status-dot" id="liveDot"></span>
+        <span id="liveStatusLabel">LIVE CONECTADA</span>
+      </div>
+
+      <!-- Toast de Powerup -->
+      <div class="event-toast" id="eventToast">🔥 SUPER ARRANCADA DO URUBU!</div>
+
+      <canvas id="raceCanvas"></canvas>
+    </div>
+
+    <!-- FAIXA VERDE DE VANTAGEM (Igual ao print) -->
+    <div class="bottom-telemetry">
+      <div class="advantage-text pixel-font" id="advantageLabel">VANTAGEM 2.4 M</div>
+      <div class="participants-text" id="participantsLabel">428 PARTICIPANTES • PLACAR GERAL: FLA 0 x 0 PAL</div>
+    </div>
+
+    <!-- BARRA DE TESTE RÁPIDO (SIMULADOR DE CHAT) -->
+    <div class="sim-bar" id="simBar">
+      <input
+        type="text"
+        id="chatInput"
+        class="sim-input"
+        placeholder="Digite 10 (ou FLA) / 22 (ou PAL)..."
+        autocomplete="off"
+      />
+      <button class="sim-send-btn" id="btnSendChat">ENVIAR</button>
+      <button class="top-btn" id="btnHideHud" title="Ocultar barra inferior para transmitir na Live">👁️</button>
+    </div>
+
+    <button class="restore-hud-btn" id="btnRestoreHud" title="Mostrar barra inferior">⌨️</button>
+
+    <!-- MODAL DE FIM DE CORRIDA (VITÓRIA) -->
+    <div class="winner-overlay" id="winnerOverlay">
+      <div class="winner-card">
+        <div style="font-size: 46px; margin-bottom: 6px;" id="winnerEmoji">🦅🏆</div>
+        <div class="pixel-font" style="font-size: 16px; color: #facc15; margin-bottom: 8px;" id="winnerTitle">
+          VITÓRIA DO URUBU!
+        </div>
+        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 14px;" id="winnerSubtitle">
+          O Urubu do Flow deixou o Porco comendo poeira na pista do Maracanã!
+        </p>
+        <div style="font-size: 12px; color: #fde047; font-weight: 800;">
+          Próxima corrida começando em <span id="nextRaceCountdown">5</span>s...
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE CONFIGURAÇÕES & CONEXÃO TIKTOK LIVE -->
+    <div class="settings-modal" id="settingsModal">
+      <div class="settings-box">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h2 style="font-size: 16px; font-weight: 800; color: #facc15;">⚙️ Painel da Live & Ajustes</h2>
+          <button class="top-btn" id="btnCloseSettings">✕ Fechar</button>
+        </div>
+
+        <div class="settings-row">
+          <label class="settings-label">1. Conectar ao Chat Real do TikTok Live</label>
+          <div style="display: flex; gap: 6px;">
+            <input
+              type="text"
+              id="tiktokUserInput"
+              class="sim-input"
+              placeholder="Ex: @seucanal (precisa estar ao vivo)"
+            />
+            <button class="sim-send-btn" id="btnConnectTikTok">Conectar</button>
+          </div>
+          <small style="color: #94a3b8; font-size: 11px;" id="wsConnectionInfo">
+            Para ler comentários reais da sua live, rode <code>node server.js</code> no Mac e abra pelo link exibido.
+          </small>
+        </div>
+
+        <div class="settings-row">
+          <label class="settings-label">2. Controles Rápidos para Gravação / Celular</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button class="top-btn" id="btnFullscreen" style="justify-content: center; padding: 10px;">
+              📱 Tela Cheia
+            </button>
+            <button class="top-btn" id="btnToggleSound" style="justify-content: center; padding: 10px;">
+              🔊 Som: ATIVO
+            </button>
+            <button class="top-btn" id="btnResetRace" style="justify-content: center; padding: 10px;">
+              🔄 Reiniciar Corrida
+            </button>
+            <button class="top-btn" id="btnCleanMode" style="justify-content: center; padding: 10px;">
+              👁️ Modo Limpo (Live)
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <label class="settings-label">3. Como funcionam os comandos no Chat da Live?</label>
+          <div style="background: rgba(0,0,0,0.35); border-radius: 8px; padding: 8px 10px; font-size: 11px; color: #cbd5e1; line-height: 1.5;">
+            • <b>Urubu do Flow correr:</b> digitar <code>10</code>, <code>1</code>, <code>FLA</code>, <code>MENGAO</code> ou <code>URUBU</code>.<br/>
+            • <b>Porco correr:</b> digitar <code>22</code>, <code>2</code>, <code>PAL</code>, <code>PORCO</code> ou <code>VERDAO</code>.<br/>
+            • <b>Presentes / Likes:</b> dão turbo, super arrancada, escudo ou jogam cansaço no rival! Você também pode tocar nos ícones de presentes na tela durante a live.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =====================================================
+    // ÁUDIO SINTETIZADO (WEB AUDIO API) - Zero arquivos externos
+    // =====================================================
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      initAudio();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'step_fla') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(580, now + 0.08);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'step_pal') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(440, now + 0.08);
+        gain.gain.setValueAtTime(0.11, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      } else if (type === 'powerup') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.22);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.24);
+        osc.start(now);
+        osc.stop(now + 0.24);
+      } else if (type === 'debuff') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(420, now);
+        osc.frequency.linearRampToValueAtTime(130, now + 0.28);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === 'win') {
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, idx) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = 'triangle';
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.frequency.setValueAtTime(freq, now + idx * 0.1);
+          g.gain.setValueAtTime(0.2, now + idx * 0.1);
+          g.gain.exponentialRampToValueAtTime(0.008, now + idx * 0.1 + 0.35);
+          o.start(now + idx * 0.1);
+          o.stop(now + idx * 0.1 + 0.35);
+        });
+      }
+    }
+
+    // =====================================================
+    // ESTADO DA CORRIDA E DOS CORREDORES
+    // =====================================================
+    const RACE_DISTANCE_METERS = 500; // 500 metros por bateria
+    let botsEnabled = true;
+    let raceActive = true;
+    let participantsCount = 428;
+    let winsFla = 0;
+    let winsPal = 0;
+    let trackScroll = 0;
+
+    const runners = {
+      fla: {
+        id: 'fla',
+        name: 'URUBU',
+        code: '10',
+        progress: 12,      // 0 a 100%
+        baseSpeed: 1.65,   // avanço base
+        boostSpeed: 0,     // bônus temporário de velocidade
+        animPhase: 0,
+        turboTimer: 0,
+        tiredTimer: 0,
+        shieldTimer: 0,
+        stumbleTimer: 0
+      },
+      pal: {
+        id: 'pal',
+        name: 'PORCO',
+        code: '22',
+        progress: 10,
+        baseSpeed: 1.65,
+        boostSpeed: 0,
+        animPhase: 2.1,
+        turboTimer: 0,
+        tiredTimer: 0,
+        shieldTimer: 0,
+        stumbleTimer: 0
+      }
+    };
+
+    const particles = [];
+    const floatingTexts = [];
+    const recentComments = [
+      { user: 'URUBU.REI.81', code: '10', team: 'fla' },
+      { user: 'NAÇÃO_MENGAO', code: '10', team: 'fla' },
+      { user: 'PORCO.VERDE22', code: '22', team: 'pal' }
+    ];
+
+    function renderChatFeed() {
+      const feed = document.getElementById('chatFeed');
+      feed.innerHTML = recentComments
+        .slice(0, 3)
+        .map(
+          (item) => `
+          <div class="chat-pill ${item.team}-pill pixel-font">
+            <span>${escapeHtml(item.user.toUpperCase().slice(0, 15))}</span>
+            <span>• &nbsp;${escapeHtml(item.code)}</span>
+          </div>
+        `
+        )
+        .join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    renderChatFeed();
+
+    // =====================================================
+    // INTERAÇÃO: VOTOS NO CHAT (10/FLA vs 22/PAL) E PRESENTES
+    // =====================================================
+    function handleVote(team, username, rawText) {
+      if (!raceActive) return;
+
+      const r = runners[team];
+      if (!r) return;
+
+      const displayCode = rawText ? rawText.toUpperCase().slice(0, 6) : (team === 'fla' ? '10' : '22');
+      recentComments.unshift({
+        user: username || 'TORCEDOR',
+        code: displayCode,
+        team
+      });
+      if (recentComments.length > 3) recentComments.pop();
+      renderChatFeed();
+
+      // Impulso no corredor
+      const factor = r.tiredTimer > 0 ? 0.45 : 1.0;
+      r.boostSpeed = Math.min(r.boostSpeed + 3.2 * factor, 18);
+      r.progress = Math.min(100, r.progress + 0.72 * factor);
+
+      playSound(team === 'fla' ? 'step_fla' : 'step_pal');
+
+      // Texto flutuante sobre o corredor
+      floatingTexts.push({
+        team,
+        text: `+${displayCode}`,
+        color: team === 'fla' ? '#f87171' : '#4ade80',
+        life: 1.0,
+        dy: 0
+      });
+
+      checkWinCondition();
+    }
+
+    function triggerPowerup(team, powerType, username) {
+      if (!raceActive) return;
+      const hero = runners[team];
+      const rival = runners[team === 'fla' ? 'pal' : 'fla'];
+
+      if (powerType === 'impulso') {
+        hero.boostSpeed = Math.min(hero.boostSpeed + 7, 22);
+        hero.progress = Math.min(100, hero.progress + 2.2);
+        hero.turboTimer = Math.max(hero.turboTimer, 2.2);
+        showToast(`${team === 'fla' ? '🌹 IMPULSO URUBU!' : '🌼 IMPULSO PORCO!'} (${username})`);
+        playSound('powerup');
+      } else if (powerType === 'avanco') {
+        hero.boostSpeed = Math.min(hero.boostSpeed + 10, 24);
+        hero.progress = Math.min(100, hero.progress + 3.8);
+        hero.turboTimer = Math.max(hero.turboTimer, 3.0);
+        showToast(`🫶 AVANÇO DE ${hero.name}! (${username})`);
+        playSound('powerup');
+      } else if (powerType === 'cansaco') {
+        if (rival.shieldTimer > 0) {
+          showToast(`🛡️ ESCUDO DE ${rival.name} BLOQUEOU O CANSAÇO!`);
+        } else {
+          rival.tiredTimer = 4.0;
+          rival.boostSpeed = 0;
+          showToast(`🤢 CANSAÇO EM ${rival.name}! (${username})`);
+          playSound('debuff');
+        }
+      } else if (powerType === 'super') {
+        hero.boostSpeed = 25;
+        hero.progress = Math.min(100, hero.progress + 6.5);
+        hero.turboTimer = 4.5;
+        showToast(`🔥 SUPER ARRANCADA DE ${hero.name}!`);
+        playSound('powerup');
+      } else if (powerType === 'escudo') {
+        hero.shieldTimer = 5.5;
+        hero.boostSpeed = Math.min(hero.boostSpeed + 8, 22);
+        if (rival.shieldTimer <= 0) {
+          rival.stumbleTimer = 2.5;
+          rival.boostSpeed = 0;
+          rival.progress = Math.max(0, rival.progress - 2.0);
+        }
+        showToast(`💎 TROPEÇO NO ${rival.name} + ESCUDO ${hero.name}!`);
+        playSound('powerup');
+      }
+
+      checkWinCondition();
+    }
+
+    let toastTimeout = null;
+    function showToast(msg) {
+      const el = document.getElementById('eventToast');
+      el.textContent = msg;
+      el.classList.add('show');
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => el.classList.remove('show'), 2100);
+    }
+
+    // Interpreta texto digitado no chat da Live ou na barra de simulação
+    function processChatCommand(user, text) {
+      const clean = (text || '').trim().toLowerCase();
+      if (!clean) return;
+
+      if (
+        clean === '10' ||
+        clean === '1' ||
+        clean === '13' ||
+        clean.includes('fla') ||
+        clean.includes('urubu') ||
+        clean.includes('meng')
+      ) {
+        handleVote('fla', user, clean === '10' || clean === '1' ? clean : 'FLA');
+      } else if (
+        clean === '22' ||
+        clean === '2' ||
+        clean.includes('pal') ||
+        clean.includes('porco') ||
+        clean.includes('verd')
+      ) {
+        handleVote('pal', user, clean === '22' || clean === '2' ? clean : 'PAL');
+      }
+    }
+
+    // =====================================================
+    // VERIFICAÇÃO DE VITÓRIA E REINÍCIO AUTOMÁTICO
+    // =====================================================
+    function checkWinCondition() {
+      if (!raceActive) return;
+      if (runners.fla.progress >= 100 || runners.pal.progress >= 100) {
+        raceActive = false;
+        const winner = runners.fla.progress >= runners.pal.progress ? 'fla' : 'pal';
+        if (winner === 'fla') winsFla++;
+        else winsPal++;
+
+        playSound('win');
+
+        const overlay = document.getElementById('winnerOverlay');
+        const emoji = document.getElementById('winnerEmoji');
+        const title = document.getElementById('winnerTitle');
+        const sub = document.getElementById('winnerSubtitle');
+
+        if (winner === 'fla') {
+          emoji.textContent = '🦅🏆🔴⚫';
+          title.textContent = 'VITÓRIA DO URUBU DO FLOW!';
+          title.style.color = '#facc15';
+          sub.textContent = 'A Nação Rubro-Negra dominou o chat e deixou o Porco pra trás!';
+        } else {
+          emoji.textContent = '🐷🏆🟢⚪';
+          title.textContent = 'VITÓRIA DO PORCO!';
+          title.style.color = '#4ade80';
+          sub.textContent = 'O Porco levou essa bateria! Nação, digite 10 para virar na próxima!';
+        }
+
+        overlay.classList.add('active');
+        let sec = 5;
+        const countEl = document.getElementById('nextRaceCountdown');
+        countEl.textContent = sec;
+
+        const timer = setInterval(() => {
+          sec--;
+          countEl.textContent = Math.max(0, sec);
+          if (sec <= 0) {
+            clearInterval(timer);
+            resetRace();
+          }
+        }, 1000);
+      }
+    }
+
+    function resetRace() {
+      document.getElementById('winnerOverlay').classList.remove('active');
+      runners.fla.progress = 5;
+      runners.fla.boostSpeed = 0;
+      runners.fla.turboTimer = 0;
+      runners.fla.tiredTimer = 0;
+      runners.fla.shieldTimer = 0;
+      runners.fla.stumbleTimer = 0;
+
+      runners.pal.progress = 5;
+      runners.pal.boostSpeed = 0;
+      runners.pal.turboTimer = 0;
+      runners.pal.tiredTimer = 0;
+      runners.pal.shieldTimer = 0;
+      runners.pal.stumbleTimer = 0;
+
+      raceActive = true;
+    }
+
+    // =====================================================
+    // BOTS SIMULADORES DE TORCIDA (PARA TESTAR SEM LIVE)
+    // =====================================================
+    const botUsersFla = [
+      'nacao_urubu12', 'gabigol_99', 'arrasca_14', 'flamenguista_rj',
+      'PedroQueixada9', 'zico_eterno10', 'urubu_do_flow', 'maracana_lotado',
+      'bh27_otopatama', 'rubronegro_ fiel'
+    ];
+    const botUsersPal = [
+      'porco_mania22', 'palmeiras_sp', 'mancha_verde', 'porco_loco',
+      'alviverde_1914', 'pep_porco', 'palestrino_sp', 'porco_turbo'
+    ];
+
+    setInterval(() => {
+      if (!botsEnabled || !raceActive) return;
+
+      // Mantém a disputa equilibrada e emocionante com leve vantagem interativa
+      const diff = runners.fla.progress - runners.pal.progress;
+      let chanceFla = 0.52;
+      if (diff > 10) chanceFla = 0.35; // rubber-banding para manter emoção
+      if (diff < -10) chanceFla = 0.68;
+
+      const isFla = Math.random() < chanceFla;
+      if (isFla) {
+        const u = botUsersFla[Math.floor(Math.random() * botUsersFla.length)];
+        const code = Math.random() < 0.78 ? '10' : 'FLA';
+        handleVote('fla', u, code);
+      } else {
+        const u = botUsersPal[Math.floor(Math.random() * botUsersPal.length)];
+        const code = Math.random() < 0.78 ? '22' : 'PAL';
+        handleVote('pal', u, code);
+      }
+
+      // Ocasionalmente um bot manda presente para movimentar os efeitos
+      if (Math.random() < 0.08) {
+        const pTeam = Math.random() < 0.53 ? 'fla' : 'pal';
+        const powers = ['impulso', 'avanco', 'cansaco', 'super', 'escudo'];
+        const pType = powers[Math.floor(Math.random() * powers.length)];
+        const pUser = pTeam === 'fla' ? ' MengãoVIP' : 'PalestraVIP';
+        triggerPowerup(pTeam, pType, pUser);
+      }
+    }, 650);
+
+    // =====================================================
+    // CANVAS: ARQUIBANCADA, PISTA DE CORRIDA, URUBU DO FLOW & PORCO
+    // =====================================================
+    const canvas = document.getElementById('raceCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Desenha o Urubu do Flow (urubu preto, bico amarelo, boné vermelho p/ trás, manto rubro-negro)
+    function drawUrubuRunner(ctx, x, y, scale, runner, rankLabel) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+
+      const phase = runner.animPhase;
+      const bounce = runner.stumbleTimer > 0 ? Math.sin(phase * 3) * 2 : Math.abs(Math.sin(phase)) * -7;
+      const lean = runner.turboTimer > 0 ? 0.22 : 0.12;
+
+      // Sombra no chão da pista
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
+      ctx.beginPath();
+      ctx.ellipse(0, 48, 34 - bounce * 0.6, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Bolha de Escudo se ativa
+      if (runner.shieldTimer > 0) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.9)';
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.18)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, -5 + bounce, 56, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.translate(0, bounce);
+      ctx.rotate(lean);
+
+      // Chamas de Turbo atrás
+      if (runner.turboTimer > 0) {
+        for (let i = 0; i < 3; i++) {
+          ctx.fillStyle = i % 2 === 0 ? '#facc15' : '#ef4444';
+          ctx.beginPath();
+          ctx.ellipse(-34 - i * 10, 8 + (i - 1) * 8, 14, 6, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      const legSwing = Math.sin(phase) * 22;
+
+      // Perna de trás (amarela de urubu + meião rubro-negro + chuteira/tênis vermelho)
+      ctx.save();
+      ctx.translate(-4, 16);
+      ctx.rotate((-legSwing * Math.PI) / 180);
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-6, 22);
+      ctx.stroke();
+      // Tênis vermelho com listras brancas
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.roundRect(-12, 20, 20, 9, 4);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(-10, 26, 18, 3);
+      ctx.restore();
+
+      // Perna da frente
+      ctx.save();
+      ctx.translate(6, 16);
+      ctx.rotate((legSwing * Math.PI) / 180);
+      ctx.strokeStyle = '#eab308';
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(8, 22);
+      ctx.stroke();
+      // Tênis vermelho
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.roundRect(2, 20, 20, 9, 4);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(4, 26, 18, 3);
+      ctx.restore();
+
+      // Calção preto com detalhe vermelho
+      ctx.fillStyle = '#111827';
+      ctx.beginPath();
+      ctx.roundRect(-15, 6, 30, 14, 5);
+      ctx.fill();
+
+      // Tronco: Camisa Rubro-Negra do Flamengo (Listras horizontais vermelhas e pretas)
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(-18, -24, 36, 32, 9);
+      ctx.clip();
+      const stripeH = 6.5;
+      for (let sy = -24; sy < 10; sy += stripeH * 2) {
+        ctx.fillStyle = '#dc2626';
+        ctx.fillRect(-20, sy, 40, stripeH);
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(-20, sy + stripeH, 40, stripeH);
+      }
+      ctx.restore();
+
+      // Número 10 / CRF no peito
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 9px sans-serif';
+      ctx.fillText('CRF', -6, -6);
+
+      // Braço/Asa preta correndo
+      ctx.save();
+      ctx.translate(2, -14);
+      ctx.rotate((-legSwing * 1.1 * Math.PI) / 180);
+      ctx.fillStyle = '#1f2937';
+      ctx.beginPath();
+      ctx.ellipse(6, 10, 7, 15, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Pescoço / Colarinho de penas pretas
+      ctx.fillStyle = '#111827';
+      ctx.beginPath();
+      ctx.arc(2, -26, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cabeça do Urubu do Flow
+      ctx.fillStyle = '#18181b';
+      ctx.beginPath();
+      ctx.arc(6, -38, 15, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Bico Amarelo Grande e Curvado de Urubu
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath();
+      ctx.moveTo(16, -44);
+      ctx.quadraticCurveTo(36, -43, 33, -32);
+      ctx.quadraticCurveTo(25, -31, 15, -33);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#ca8a04';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Sorriso confiante / provocador no bico
+      ctx.strokeStyle = '#713f12';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(17, -36);
+      ctx.quadraticCurveTo(24, -34, 29, -37);
+      ctx.stroke();
+
+      // Olho expressivo com sobrancelha "Flow"
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(12, -41, 4.5, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#090d16';
+      ctx.beginPath();
+      ctx.arc(13.5, -41, 2.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Sobrancelha invocada
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(8, -47);
+      ctx.lineTo(17, -45);
+      ctx.stroke();
+
+      // BONÉ VERMELHO VIRADO PARA TRÁS (Marca registrada do Urubu do Flow!)
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.arc(5, -43, 14.5, Math.PI * 0.95, Math.PI * 2.02);
+      ctx.fill();
+      // Faixa preta do boné
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(-9, -44, 28, 3.5);
+      // Aba do boné virada para trás!
+      ctx.fillStyle = '#b91c1c';
+      ctx.beginPath();
+      ctx.roundRect(-22, -45, 15, 6, 3);
+      ctx.fill();
+
+      // Se estiver cansado/tropeçando, mostra gotas de suor / estrelas
+      if (runner.tiredTimer > 0 || runner.stumbleTimer > 0) {
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText('💦', -24, -52);
+      }
+
+      ctx.restore();
+
+      // Plaquinha Flutuante "1º URUBU" igual ao print
+      ctx.save();
+      ctx.translate(x, y - 78 * scale);
+      ctx.fillStyle = 'rgba(220, 38, 38, 0.92)';
+      ctx.strokeStyle = '#fca5a5';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(-42, -13, 84, 22, 5);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 10px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${rankLabel} URUBU`, 0, 2);
+      ctx.restore();
+    }
+
+    // Desenha o Porco Rival (Porco cartunesco com uniforme verde do Palmeiras)
+    function drawPorcoRunner(ctx, x, y, scale, runner, rankLabel) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(scale, scale);
+
+      const phase = runner.animPhase;
+      const bounce = runner.stumbleTimer > 0 ? Math.sin(phase * 3) * 2 : Math.abs(Math.sin(phase)) * -6.5;
+      const lean = runner.turboTimer > 0 ? 0.2 : 0.1;
+
+      // Sombra no chão
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
+      ctx.beginPath();
+      ctx.ellipse(0, 48, 34 - bounce * 0.6, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Escudo se ativo
+      if (runner.shieldTimer > 0) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(74, 222, 128, 0.9)';
+        ctx.fillStyle = 'rgba(74, 222, 128, 0.18)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, -5 + bounce, 56, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.translate(0, bounce);
+      ctx.rotate(lean);
+
+      if (runner.turboTimer > 0) {
+        for (let i = 0; i < 3; i++) {
+          ctx.fillStyle = i % 2 === 0 ? '#4ade80' : '#facc15';
+          ctx.beginPath();
+          ctx.ellipse(-34 - i * 10, 8 + (i - 1) * 8, 14, 6, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      const legSwing = Math.sin(phase) * 22;
+
+      // Perna de trás (rosada de porco + tênis verde)
+      ctx.save();
+      ctx.translate(-4, 16);
+      ctx.rotate((-legSwing * Math.PI) / 180);
+      ctx.strokeStyle = '#f472b6';
+      ctx.lineWidth = 7;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-6, 22);
+      ctx.stroke();
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath();
+      ctx.roundRect(-12, 20, 20, 9, 4);
+      ctx.fill();
+      ctx.restore();
+
+      // Perna da frente
+      ctx.save();
+      ctx.translate(6, 16);
+      ctx.rotate((legSwing * Math.PI) / 180);
+      ctx.strokeStyle = '#f9a8d4';
+      ctx.lineWidth = 7;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(8, 22);
+      ctx.stroke();
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath();
+      ctx.roundRect(2, 20, 20, 9, 4);
+      ctx.fill();
+      ctx.restore();
+
+      // Rabinho enrolado de porco
+      ctx.strokeStyle = '#f472b6';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(-20, 6, 5, 0, Math.PI * 1.5);
+      ctx.stroke();
+
+      // Calção branco/verde
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.roundRect(-16, 6, 32, 14, 5);
+      ctx.fill();
+
+      // Camisa Verde Alviverde com detalhes brancos/amarelos
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath();
+      ctx.roundRect(-19, -24, 38, 32, 10);
+      ctx.fill();
+      // Faixa lateral amarela/branca igual ao uniforme de corrida
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(-4, -22, 8, 28);
+
+      // Braço rosado correndo
+      ctx.save();
+      ctx.translate(2, -14);
+      ctx.rotate((-legSwing * 1.1 * Math.PI) / 180);
+      ctx.fillStyle = '#f9a8d4';
+      ctx.beginPath();
+      ctx.ellipse(6, 10, 6.5, 14, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Cabeça Rosada do Porco
+      ctx.fillStyle = '#f9a8d4';
+      ctx.beginPath();
+      ctx.arc(6, -37, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Orelhas pontudas de porco
+      ctx.fillStyle = '#f472b6';
+      ctx.beginPath();
+      ctx.moveTo(-2, -49);
+      ctx.lineTo(4, -60);
+      ctx.lineTo(11, -50);
+      ctx.closePath();
+      ctx.fill();
+
+      // Focinho redondo de porco na frente
+      ctx.fillStyle = '#f472b6';
+      ctx.beginPath();
+      ctx.ellipse(23, -36, 8, 6.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#db2777';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // Narinas do focinho
+      ctx.fillStyle = '#831843';
+      ctx.beginPath();
+      ctx.arc(21, -36, 1.7, 0, Math.PI * 2);
+      ctx.arc(25.5, -36, 1.7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Olho do Porco
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(12, -42, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#111827';
+      ctx.beginPath();
+      ctx.arc(13.5, -42, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (runner.tiredTimer > 0 || runner.stumbleTimer > 0 || runners.fla.progress > runner.progress) {
+        // Suando quando está atrás do Urubu!
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText('💦', -22, -48);
+      }
+
+      ctx.restore();
+
+      // Plaquinha Flutuante "2º PORCO"
+      ctx.save();
+      ctx.translate(x, y - 78 * scale);
+      ctx.fillStyle = 'rgba(22, 163, 74, 0.92)';
+      ctx.strokeStyle = '#86efac';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(-42, -13, 84, 22, 5);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 10px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${rankLabel} PORCO`, 0, 2);
+      ctx.restore();
+    }
+
+    // =====================================================
+    // LOOP PRINCIPAL DE FÍSICA E RENDERIZAÇÃO (60 FPS)
+    // =====================================================
+    let lastTime = performance.now();
+
+    function gameLoop(now) {
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+
+      updatePhysics(dt);
+      renderScene(now);
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function updatePhysics(dt) {
+      if (!raceActive) return;
+
+      ['fla', 'pal'].forEach((key) => {
+        const r = runners[key];
+        if (r.turboTimer > 0) r.turboTimer = Math.max(0, r.turboTimer - dt);
+        if (r.tiredTimer > 0) r.tiredTimer = Math.max(0, r.tiredTimer - dt);
+        if (r.shieldTimer > 0) r.shieldTimer = Math.max(0, r.shieldTimer - dt);
+        if (r.stumbleTimer > 0) r.stumbleTimer = Math.max(0, r.stumbleTimer - dt);
+
+        // Decaimento suave do impulso de comentários
+        r.boostSpeed = Math.max(0, r.boostSpeed - 4.2 * dt);
+
+        let mult = 1.0;
+        if (r.turboTimer > 0) mult *= 1.45;
+        if (r.tiredTimer > 0) mult *= 0.55;
+        if (r.stumbleTimer > 0) mult *= 0.2;
+
+        const effectiveSpeed = (r.baseSpeed + r.boostSpeed * 0.35) * mult;
+        r.progress = Math.min(100, r.progress + effectiveSpeed * dt);
+        r.animPhase += dt * (9 + r.boostSpeed * 0.8) * mult;
+      });
+
+      const avgBoost = (runners.fla.boostSpeed + runners.pal.boostSpeed) * 0.5;
+      trackScroll = (trackScroll + dt * (240 + avgBoost * 22)) % 90;
+
+      // Atualiza Textos Flutuantes
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        floatingTexts[i].life -= dt * 1.4;
+        floatingTexts[i].dy -= dt * 38;
+        if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1);
+      }
+
+      updateHUD();
+      checkWinCondition();
+    }
+
+    function updateHUD() {
+      const flaP = Math.round(runners.fla.progress);
+      const palP = Math.round(runners.pal.progress);
+
+      document.getElementById('barFla').style.width = `${Math.max(6, flaP)}%`;
+      document.getElementById('barPal').style.width = `${Math.max(6, palP)}%`;
+
+      document.getElementById('pctFla').textContent = `${flaP}%`;
+      document.getElementById('pctPal').textContent = `${palP}%`;
+
+      const kmhFla = Math.round(58 + runners.fla.boostSpeed * 2.1 + (runners.fla.turboTimer > 0 ? 14 : 0));
+      const kmhPal = Math.round(58 + runners.pal.boostSpeed * 2.1 + (runners.pal.turboTimer > 0 ? 14 : 0));
+
+      document.getElementById('spdFla').textContent = `${kmhFla} KM/H`;
+      document.getElementById('spdPal').textContent = `${kmhPal} KM/H`;
+
+      const flaLeading = runners.fla.progress >= runners.pal.progress;
+      const rankFla = document.getElementById('rankFla');
+      const rankPal = document.getElementById('rankPal');
+
+      if (flaLeading) {
+        rankFla.textContent = '1º';
+        rankFla.className = 'rank-badge rank-1 pixel-font';
+        rankPal.textContent = '2º';
+        rankPal.className = 'rank-badge rank-2 pixel-font';
+      } else {
+        rankFla.textContent = '2º';
+        rankFla.className = 'rank-badge rank-2 pixel-font';
+        rankPal.textContent = '1º';
+        rankPal.className = 'rank-badge rank-1 pixel-font';
+      }
+
+      // Calcula vantagem em metros igual ao print ("VANTAGEM 9.6 M")
+      const diffMeters = (Math.abs(runners.fla.progress - runners.pal.progress) * (RACE_DISTANCE_METERS / 100)).toFixed(1);
+      const leaderName = flaLeading ? 'URUBU' : 'PORCO';
+      document.getElementById('advantageLabel').textContent = `VANTAGEM ${leaderName}: ${diffMeters} M`;
+      document.getElementById('participantsLabel').textContent =
+        `${participantsCount} PARTICIPANTES • VITÓRIAS: FLA ${winsFla} x ${winsPal} PAL`;
+    }
+
+    function renderScene(now) {
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      ctx.clearRect(0, 0, w, h);
+
+      const stadiumH = h * 0.36;
+      const trackY = stadiumH;
+      const trackH = h - stadiumH;
+
+      // 1. ARQUIBANCADA DO ESTÁDIO (Fundo Azul c/ Torcida Piscando)
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, stadiumH);
+      skyGrad.addColorStop(0, '#17376e');
+      skyGrad.addColorStop(1, '#255799');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, w, stadiumH);
+
+      // Fileiras da Arquibancada
+      for (let row = 0; row < 5; row++) {
+        const ry = stadiumH * 0.22 + row * (stadiumH * 0.15);
+        ctx.fillStyle = row % 2 === 0 ? 'rgba(15, 23, 42, 0.55)' : 'rgba(30, 58, 138, 0.45)';
+        ctx.fillRect(0, ry, w, stadiumH * 0.09);
+
+        // Pontos de torcedores e flashes na arquibancada
+        for (let col = 8; col < w; col += 18) {
+          const flash = Math.sin(now * 0.008 + col * 0.5 + row) > 0.92;
+          ctx.fillStyle = flash
+            ? '#ffffff'
+            : (col + row * 7) % 3 === 0
+            ? '#ef4444'
+            : (col + row * 5) % 2 === 0
+            ? '#22c55e'
+            : '#93c5fd';
+          ctx.fillRect(col, ry + 2, 5, 4);
+        }
+      }
+
+      // Mureta Amarela dividindo Arquibancada e Pista (Igual ao print)
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(0, trackY - 6, w, 8);
+      ctx.fillStyle = '#ca8a04';
+      ctx.fillRect(0, trackY + 2, w, 3);
+
+      // 2. PISTA DE ATLETISMO LARANJA/VERMELHA EM PERSPECTIVA
+      const trackGrad = ctx.createLinearGradient(0, trackY, 0, h);
+      trackGrad.addColorStop(0, '#c2410c');
+      trackGrad.addColorStop(0.5, '#b91c1c');
+      trackGrad.addColorStop(1, '#991b1b');
+      ctx.fillStyle = trackGrad;
+      ctx.fillRect(0, trackY + 5, w, trackH);
+
+      // Linhas Horizontais das Raias (Brancas/Rosadas igual ao print)
+      ctx.strokeStyle = 'rgba(255, 235, 230, 0.65)';
+      ctx.lineWidth = 2.5;
+      const laneMidY = trackY + trackH * 0.48;
+
+      [trackY + 14, laneMidY, h - 10].forEach((ly) => {
+        ctx.beginPath();
+        ctx.moveTo(0, ly);
+        ctx.lineTo(w, ly);
+        ctx.stroke();
+      });
+
+      // Marcas diagonais da pista se movendo para sensação de alta velocidade
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+      ctx.lineWidth = 3;
+      for (let x = -trackScroll; x < w + 90; x += 90) {
+        ctx.beginPath();
+        ctx.moveTo(x + 35, trackY + 14);
+        ctx.lineTo(x - 25, h - 10);
+        ctx.stroke();
+      }
+
+      // 3. POSICIONAMENTO DOS CORREDORES NA TELA
+      // Mapeia a diferença e o progresso para posição X na pista
+      const flaLeading = runners.fla.progress >= runners.pal.progress;
+      const diff = runners.fla.progress - runners.pal.progress;
+
+      // Posição base no centro da pista + deslocamento pela vantagem
+      const centerX = w * 0.52;
+      const flaX = Math.max(w * 0.22, Math.min(w * 0.78, centerX + diff * 3.2));
+      const palX = Math.max(w * 0.22, Math.min(w * 0.78, centerX - diff * 3.2));
+
+      const flaY = trackY + trackH * 0.30;
+      const palY = trackY + trackH * 0.72;
+      const charScale = Math.min(1.05, Math.max(0.72, h / 310));
+
+      // Desenha Urubu (Raia Superior) e Porco (Raia Inferior)
+      drawUrubuRunner(ctx, flaX, flaY, charScale, runners.fla, flaLeading ? '1º' : '2º');
+      drawPorcoRunner(ctx, palX, palY, charScale, runners.pal, flaLeading ? '2º' : '1º');
+
+      // Desenha Textos Flutuantes de Votos (+10 / +22)
+      floatingTexts.forEach((ft) => {
+        const tx = ft.team === 'fla' ? flaX : palX;
+        const ty = (ft.team === 'fla' ? flaY : palY) - 45 + ft.dy;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, ft.life);
+        ctx.font = '800 13px "Press Start 2P", monospace';
+        ctx.fillStyle = ft.color;
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        ctx.strokeText(ft.text, tx - 16, ty);
+        ctx.fillText(ft.text, tx - 16, ty);
+        ctx.restore();
+      });
+    }
+
+    requestAnimationFrame(gameLoop);
+
+    // =====================================================
+    // CONTROLES DE INTERFACE & WEBSOCKET DO TIKTOK LIVE
+    // =====================================================
+    const chatInput = document.getElementById('chatInput');
+    const btnSendChat = document.getElementById('btnSendChat');
+
+    function submitManualChat() {
+      const val = chatInput.value.trim();
+      if (!val) return;
+      processChatCommand('VOCÊ', val);
+      chatInput.value = '';
+    }
+
+    btnSendChat.addEventListener('click', submitManualChat);
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitManualChat();
+    });
+
+    // Atalhos rápidos de teclado quando não estiver digitando no input
+    window.addEventListener('keydown', (e) => {
+      if (document.activeElement === chatInput || document.activeElement === document.getElementById('tiktokUserInput')) return;
+      if (e.key === '1') handleVote('fla', 'TECLADO', '10');
+      if (e.key === '2') handleVote('pal', 'TECLADO', '22');
+    });
+
+    // Botão Bots ON/OFF
+    document.getElementById('btnToggleBots').addEventListener('click', () => {
+      botsEnabled = !botsEnabled;
+      document.getElementById('botStatusText').textContent = botsEnabled ? 'Bots: ON' : 'Bots: OFF';
+    });
+
+    // Modal de Configurações
+    const settingsModal = document.getElementById('settingsModal');
+    document.getElementById('btnOpenSettings').addEventListener('click', () => {
+      settingsModal.classList.add('active');
+    });
+    document.getElementById('btnCloseSettings').addEventListener('click', () => {
+      settingsModal.classList.remove('active');
+    });
+
+    // Tela Cheia
+    document.getElementById('btnFullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+      settingsModal.classList.remove('active');
+    });
+
+    // Som ON/OFF
+    document.getElementById('btnToggleSound').addEventListener('click', (e) => {
+      soundEnabled = !soundEnabled;
+      e.target.textContent = soundEnabled ? '🔊 Som: ATIVO' : '🔇 Som: MUDO';
+    });
+
+    // Reiniciar Corrida
+    document.getElementById('btnResetRace').addEventListener('click', () => {
+      resetRace();
+      settingsModal.classList.remove('active');
+    });
+
+    // Modo Limpo (Ocultar barra de simulação inferior para transmitir a tela do celular limpa)
+    const simBar = document.getElementById('simBar');
+    const btnRestoreHud = document.getElementById('btnRestoreHud');
+
+    function setCleanMode(clean) {
+      if (clean) {
+        simBar.classList.add('hidden');
+        btnRestoreHud.style.display = 'flex';
+      } else {
+        simBar.classList.remove('hidden');
+        btnRestoreHud.style.display = 'none';
+      }
+      setTimeout(resizeCanvas, 50);
+    }
+
+    document.getElementById('btnHideHud').addEventListener('click', () => setCleanMode(true));
+    document.getElementById('btnCleanMode').addEventListener('click', () => {
+      setCleanMode(true);
+      settingsModal.classList.remove('active');
+    });
+    btnRestoreHud.addEventListener('click', () => setCleanMode(false));
+
+    // =====================================================
+    // CONEXÃO WEBSOCKET COM O SERVIDOR NODE.JS (TIKTOK LIVE)
+    // =====================================================
+    let ws = null;
+    function connectWebSocket() {
+      if (location.protocol === 'file:') return;
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${proto}//${location.host}`);
+
+      ws.onopen = () => {
+        document.getElementById('wsConnectionInfo').textContent =
+          '✅ Servidor local conectado! Digite seu @usuario do TikTok acima quando estiver em LIVE.';
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'status') {
+            document.getElementById('liveStatusLabel').textContent = data.message || 'LIVE CONECTADA';
+            document.getElementById('wsConnectionInfo').textContent = data.message;
+            if (data.connected) {
+              // Desativa os bots automaticamente quando conecta numa live real
+              botsEnabled = false;
+              document.getElementById('botStatusText').textContent = 'Bots: OFF';
+            }
+          } else if (data.type === 'chat') {
+            processChatCommand(data.user, data.comment);
+          } else if (data.type === 'gift') {
+            // Mapeia presentes do TikTok para os poderes da corrida
+            const d = data.diamondCount || 1;
+            const team = Math.random() < 0.5 ? 'fla' : 'pal';
+            if (d >= 20) triggerPowerup('fla', 'escudo', data.user);
+            else if (d >= 10) triggerPowerup('fla', 'super', data.user);
+            else if (d >= 5) triggerPowerup('fla', 'cansaco', data.user);
+            else triggerPowerup(team, 'impulso', data.user);
+          } else if (data.type === 'viewers' && data.viewerCount) {
+            participantsCount = data.viewerCount;
+          }
+        } catch (err) {}
+      };
+    }
+
+    connectWebSocket();
+
+    document.getElementById('btnConnectTikTok').addEventListener('click', () => {
+      const username = document.getElementById('tiktokUserInput').value.trim();
+      if (!username) return;
+      if (ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({ type: 'connect_tiktok', username }));
+      } else {
+        alert('Para conectar ao TikTok real, certifique-se de estar abrindo pelo link do servidor (http://localhost:3000).');
+      }
+    });
+  </script>
+</body>
+</html>
