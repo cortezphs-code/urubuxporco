@@ -100,7 +100,7 @@ if (WebSocketServer) {
     currentViewerCount = 0;
     tiktokConnection = new LiveConnectionClass(cleanUser, {
       processInitialData: true,
-      enableExtendedGiftInfo: true
+      enableExtendedGiftInfo: false
     });
 
     tiktokConnection.on('error', (err) => {
