@@ -4,7 +4,7 @@ const path = require('path');
 const os = require('os');
 
 let WebSocketServer;
-let WebcastPushConnection;
+let LiveConnectionClass;
 
 try {
   WebSocketServer = require('ws').WebSocketServer;
@@ -13,7 +13,8 @@ try {
 }
 
 try {
-  WebcastPushConnection = require('tiktok-live-connector').WebcastPushConnection;
+  const tiktokPkg = require('tiktok-live-connector');
+  LiveConnectionClass = tiktokPkg.TikTokLiveConnection || tiktokPkg.WebcastPushConnection;
 } catch (e) {
   console.warn('⚠️ Pacote "tiktok-live-connector" ainda não instalado. Rode: npm install');
 }
@@ -62,8 +63,16 @@ if (WebSocketServer) {
     });
   }
 
+  function extractUsername(data) {
+    if (!data) return 'torcedor';
+    if (data.user && (data.user.uniqueId || data.user.nickname)) {
+      return data.user.uniqueId || data.user.nickname;
+    }
+    return data.uniqueId || data.nickname || 'torcedor';
+  }
+
   function connectToTikTok(username) {
-    if (!WebcastPushConnection) {
+    if (!LiveConnectionClass) {
       broadcast({
         type: 'status',
         connected: false,
@@ -82,7 +91,10 @@ if (WebSocketServer) {
     }
 
     currentUsername = cleanUser;
-    tiktokConnection = new WebcastPushConnection(cleanUser);
+    tiktokConnection = new LiveConnectionClass(cleanUser, {});
+    tiktokConnection.on('error', (err) => {
+      console.error('⚠️ Aviso TikTok Live:', err && err.message ? err.message : err);
+    });
 
     broadcast({
       type: 'status',
@@ -93,27 +105,27 @@ if (WebSocketServer) {
     tiktokConnection
       .connect()
       .then((state) => {
-        console.log(`✅ Conectado à Live de @${cleanUser} (Room ID: ${state.roomId})`);
+        console.log(`✅ Conectado à Live de @${cleanUser} (Room ID: ${state && state.roomId})`);
         broadcast({
           type: 'status',
           connected: true,
           username: cleanUser,
-          viewerCount: state.viewerCount || 0,
+          viewerCount: (state && state.viewerCount) || 0,
           message: `LIVE CONECTADA: @${cleanUser}`
         });
       })
       .catch((err) => {
-        console.error('❌ Erro ao conectar na live:', err.message);
+        console.error('❌ Erro ao conectar na live:', err && err.message ? err.message : err);
         broadcast({
           type: 'status',
           connected: false,
-          message: `Erro ao conectar em @${cleanUser}: Verifique se a conta está em LIVE agora.`
+          message: `Não foi possível conectar em @${cleanUser}: Verifique se @${cleanUser} já está AO VIVO agora no TikTok.`
         });
       });
 
     tiktokConnection.on('chat', (data) => {
-      const comment = (data.comment || '').trim();
-      const user = data.uniqueId || data.nickname || 'torcedor';
+      const comment = (data && data.comment ? data.comment : '').trim();
+      const user = extractUsername(data);
       broadcast({
         type: 'chat',
         user,
@@ -122,34 +134,41 @@ if (WebSocketServer) {
     });
 
     tiktokConnection.on('gift', (data) => {
-      if (data.giftType === 1 && !data.repeatEnd) return;
-      const user = data.uniqueId || data.nickname || 'torcedor';
-      const giftName = (data.giftName || '').toLowerCase();
-      const diamondCount = data.diamondCount || 1;
+      if (data && data.giftType === 1 && !data.repeatEnd) return;
+      const user = extractUsername(data);
+      const giftName = (
+        (data && data.giftDetails && data.giftDetails.giftName) ||
+        (data && data.giftName) ||
+        ''
+      ).toLowerCase();
+      const diamondCount =
+        (data && data.giftDetails && data.giftDetails.diamondCount) ||
+        (data && data.diamondCount) ||
+        1;
 
       broadcast({
         type: 'gift',
         user,
         giftName,
         diamondCount,
-        repeatCount: data.repeatCount || 1
+        repeatCount: (data && data.repeatCount) || 1
       });
     });
 
     tiktokConnection.on('like', (data) => {
-      const user = data.uniqueId || data.nickname || 'torcedor';
+      const user = extractUsername(data);
       broadcast({
         type: 'like',
         user,
-        likeCount: data.likeCount || 1,
-        totalLikeCount: data.totalLikeCount || 0
+        likeCount: (data && data.likeCount) || 1,
+        totalLikeCount: (data && data.totalLikeCount) || 0
       });
     });
 
     tiktokConnection.on('roomUser', (data) => {
       broadcast({
         type: 'viewers',
-        viewerCount: data.viewerCount || 0
+        viewerCount: (data && data.viewerCount) || 0
       });
     });
   }
