@@ -932,9 +932,10 @@ window.PORCO_FULL_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBM
               type="text"
               id="tiktokUserInput"
               class="sim-input"
-              placeholder="Ex: @seucanal (precisa estar ao vivo)"
+              placeholder="Ex: @nacaourubu12"
             />
             <button class="sim-send-btn" id="btnConnectTikTok">Conectar</button>
+            <button class="top-btn" id="btnDisconnectTikTok" style="border-color:#ef4444; color:#fca5a5;">🔌 Sair</button>
           </div>
           <small style="color: #94a3b8; font-size: 11px;" id="wsConnectionInfo">
             Conecte seu @usuario quando já estiver transmitindo ao vivo no TikTok.
@@ -1904,6 +1905,10 @@ window.PORCO_FULL_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBM
           }
         } catch (err) {}
       };
+
+      ws.onclose = () => {
+        setTimeout(connectWebSocket, 3000);
+      };
     }
 
     connectWebSocket();
@@ -1915,6 +1920,12 @@ window.PORCO_FULL_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBM
         ws.send(JSON.stringify({ type: 'connect_tiktok', username }));
       } else {
         alert('Servidor WebSocket ainda não conectado. Abra pelo link hospedado do servidor.');
+      }
+    });
+
+    document.getElementById('btnDisconnectTikTok').addEventListener('click', () => {
+      if (ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({ type: 'disconnect_tiktok' }));
       }
     });
   </script>

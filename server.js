@@ -222,10 +222,45 @@ if (WebSocketServer) {
         totalLikeCount: Number((data && (data.total || data.totalLikeCount)) || 0)
       });
     });
+
+    // Reconecta automaticamente se o WebSocket do TikTok oscilar durante a Live
+    tiktokConnection.on('disconnected', () => {
+      console.warn(`⚠️ WebSocket do TikTok desconectou de @${cleanUser}. Reconectando em 3s...`);
+      if (currentUsername === cleanUser) {
+        setTimeout(() => {
+          if (currentUsername === cleanUser) {
+            connectToTikTok(cleanUser);
+          }
+        }, 3000);
+      }
+    });
+
+    tiktokConnection.on('streamEnd', () => {
+      currentViewerCount = 0;
+      tiktokConnection = null;
+      currentUsername = null;
+      broadcast({
+        type: 'status',
+        connected: false,
+        viewerCount: 0,
+        message: 'Live encerrada'
+      });
+    });
   }
 
+  // Keep-alive ping a cada 20s para o proxy do Render nunca derrubar o WebSocket
+  setInterval(() => {
+    wss.clients.forEach((client) => {
+      if (client.readyState === 1) {
+        try {
+          client.ping();
+        } catch (_) {}
+      }
+    });
+  }, 20000);
+
   wss.on('connection', (ws) => {
-    if (currentUsername && tiktokConnection) {
+    if (currentUsername && tiktokConnection && tiktokConnection.isConnected) {
       ws.send(
         JSON.stringify({
           type: 'status',
