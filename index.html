@@ -1140,7 +1140,7 @@ window.PORCO_MASCOT_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4Q
     const RACE_DISTANCE_METERS = 500;
     let botsEnabled = true;
     let raceActive = true;
-    let participantsCount = 428;
+    let participantsCount = 0;
     let winsFla = 0;
     let winsPal = 0;
     let trackScroll = 0;
@@ -1651,7 +1651,7 @@ window.PORCO_MASCOT_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4Q
       const leaderMascot = flaLeading ? 'LÍDER URUBU' : 'LÍDER PORCO';
       document.getElementById('advantageLabel').textContent = `${leaderMascot} • VANTAGEM ${diffMeters} M`;
       document.getElementById('participantsLabel').textContent =
-        `${participantsCount} TORCEDORES • TÍTULOS NA LIVE: URUBU ${winsFla} x ${winsPal} PORCO`;
+        `${participantsCount} ESPECTADORES • TÍTULOS NA LIVE: URUBU ${winsFla} x ${winsPal} PORCO`;
     }
 
     function renderScene(now) {
@@ -1866,6 +1866,9 @@ window.PORCO_MASCOT_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4Q
           if (data.type === 'status') {
             document.getElementById('liveStatusLabel').textContent = data.message || 'LIVE CONECTADA';
             document.getElementById('wsConnectionInfo').textContent = data.message;
+            if (typeof data.viewerCount === 'number') {
+              participantsCount = data.viewerCount;
+            }
             if (data.connected) {
               botsEnabled = false;
               document.getElementById('botStatusText').textContent = 'Bots: OFF';
@@ -1879,7 +1882,7 @@ window.PORCO_MASCOT_B64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4Q
             else if (d >= 10) triggerPowerup('fla', 'super', data.user);
             else if (d >= 5) triggerPowerup('fla', 'cansaco', data.user);
             else triggerPowerup(team, 'impulso', data.user);
-          } else if (data.type === 'viewers' && data.viewerCount) {
+          } else if (data.type === 'viewers' && typeof data.viewerCount === 'number') {
             participantsCount = data.viewerCount;
           }
         } catch (err) {}

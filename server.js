@@ -50,6 +50,7 @@ const server = http.createServer((req, res) => {
 
 let tiktokConnection = null;
 let currentUsername = null;
+let currentViewerCount = 0;
 
 if (WebSocketServer) {
   const wss = new WebSocketServer({ server });
@@ -65,10 +66,15 @@ if (WebSocketServer) {
 
   function extractUsername(data) {
     if (!data) return 'torcedor';
-    if (data.user && (data.user.uniqueId || data.user.nickname)) {
-      return data.user.uniqueId || data.user.nickname;
+    if (data.user) {
+      return (
+        data.user.uniqueId ||
+        data.user.displayId ||
+        data.user.nickname ||
+        'torcedor'
+      );
     }
-    return data.uniqueId || data.nickname || 'torcedor';
+    return data.uniqueId || data.displayId || data.nickname || 'torcedor';
   }
 
   function connectToTikTok(username) {
@@ -91,7 +97,12 @@ if (WebSocketServer) {
     }
 
     currentUsername = cleanUser;
-    tiktokConnection = new LiveConnectionClass(cleanUser, {});
+    currentViewerCount = 0;
+    tiktokConnection = new LiveConnectionClass(cleanUser, {
+      processInitialData: true,
+      enableExtendedGiftInfo: true
+    });
+
     tiktokConnection.on('error', (err) => {
       console.error('⚠️ Aviso TikTok Live:', err && err.message ? err.message : err);
     });
@@ -99,18 +110,26 @@ if (WebSocketServer) {
     broadcast({
       type: 'status',
       connected: false,
+      viewerCount: 0,
       message: `Conectando à live de @${cleanUser}...`
     });
 
     tiktokConnection
       .connect()
       .then((state) => {
-        console.log(`✅ Conectado à Live de @${cleanUser} (Room ID: ${state && state.roomId})`);
+        const initialViewers = Number(
+          (state && state.roomInfo && state.roomInfo.data && state.roomInfo.data.user_count) ||
+          (state && state.viewerCount) ||
+          currentViewerCount ||
+          0
+        );
+        currentViewerCount = initialViewers;
+        console.log(`✅ Conectado à Live de @${cleanUser} (Espectadores: ${currentViewerCount})`);
         broadcast({
           type: 'status',
           connected: true,
           username: cleanUser,
-          viewerCount: (state && state.viewerCount) || 0,
+          viewerCount: currentViewerCount,
           message: `LIVE CONECTADA: @${cleanUser}`
         });
       })
@@ -119,56 +138,88 @@ if (WebSocketServer) {
         broadcast({
           type: 'status',
           connected: false,
+          viewerCount: 0,
           message: `Não foi possível conectar em @${cleanUser}: Verifique se @${cleanUser} já está AO VIVO agora no TikTok.`
         });
       });
 
+    // Comentários do Chat (suporta v2 data.content e v1 data.comment)
     tiktokConnection.on('chat', (data) => {
-      const comment = (data && data.comment ? data.comment : '').trim();
+      const rawText = (data && (data.content || data.comment)) || '';
+      const comment = String(rawText).trim();
       const user = extractUsername(data);
-      broadcast({
-        type: 'chat',
-        user,
-        comment
-      });
+      console.log(`💬 [${user}]: ${comment}`);
+      if (comment) {
+        broadcast({
+          type: 'chat',
+          user,
+          comment
+        });
+      }
     });
 
+    // Quando alguém entra na Live (atualiza também o total de espectadores em tempo real!)
+    tiktokConnection.on('member', (data) => {
+      const user = extractUsername(data);
+      const count = Number((data && data.memberCount) || 0);
+      if (count > 0) {
+        currentViewerCount = count;
+        broadcast({
+          type: 'viewers',
+          viewerCount: currentViewerCount,
+          joinedUser: user
+        });
+      }
+    });
+
+    // Atualização periódica da audiência da sala (v2 data.total e v1 data.viewerCount)
+    tiktokConnection.on('roomUser', (data) => {
+      const viewers = Number((data && (data.total ?? data.viewerCount)) ?? -1);
+      if (viewers >= 0) {
+        currentViewerCount = viewers;
+        broadcast({
+          type: 'viewers',
+          viewerCount: currentViewerCount
+        });
+      }
+    });
+
+    // Presentes (Gifts)
     tiktokConnection.on('gift', (data) => {
       if (data && data.giftType === 1 && !data.repeatEnd) return;
       const user = extractUsername(data);
       const giftName = (
         (data && data.giftDetails && data.giftDetails.giftName) ||
+        (data && data.extendedGiftInfo && data.extendedGiftInfo.name) ||
         (data && data.giftName) ||
         ''
       ).toLowerCase();
-      const diamondCount =
+      const diamondCount = Number(
         (data && data.giftDetails && data.giftDetails.diamondCount) ||
+        (data && data.extendedGiftInfo && data.extendedGiftInfo.diamond_count) ||
+        (data && data.fanTicketCount) ||
         (data && data.diamondCount) ||
-        1;
+        1
+      );
 
+      console.log(`🎁 [${user}] enviou presente (${diamondCount} moedas)`);
       broadcast({
         type: 'gift',
         user,
         giftName,
         diamondCount,
-        repeatCount: (data && data.repeatCount) || 1
+        repeatCount: Number((data && data.repeatCount) || 1)
       });
     });
 
+    // Curtidas (Likes)
     tiktokConnection.on('like', (data) => {
       const user = extractUsername(data);
       broadcast({
         type: 'like',
         user,
-        likeCount: (data && data.likeCount) || 1,
-        totalLikeCount: (data && data.totalLikeCount) || 0
-      });
-    });
-
-    tiktokConnection.on('roomUser', (data) => {
-      broadcast({
-        type: 'viewers',
-        viewerCount: (data && data.viewerCount) || 0
+        likeCount: Number((data && (data.count || data.likeCount)) || 1),
+        totalLikeCount: Number((data && (data.total || data.totalLikeCount)) || 0)
       });
     });
   }
@@ -180,6 +231,7 @@ if (WebSocketServer) {
           type: 'status',
           connected: true,
           username: currentUsername,
+          viewerCount: currentViewerCount,
           message: `LIVE CONECTADA: @${currentUsername}`
         })
       );
@@ -197,10 +249,12 @@ if (WebSocketServer) {
             } catch (_) {}
             tiktokConnection = null;
             currentUsername = null;
+            currentViewerCount = 0;
           }
           broadcast({
             type: 'status',
             connected: false,
+            viewerCount: 0,
             message: 'MODO SIMULAÇÃO / LOCAL'
           });
         }
