@@ -1,14 +1,13 @@
 {
   "name": "urubu-corrida-live",
   "version": "1.0.0",
-  "description": "Jogo Interativo de TikTok Live - Corrida Maluca: Urubu do Flow vs Porco",
+  "description": "Jogo Interativo de TikTok Live - Corrida pelo Brasileirão: Urubu vs Porco",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "tiktok-live-connector": "^1.2.4",
-    "ws": "^8.17.0"
+    "tiktok-live-connector": "latest",
+    "ws": "latest"
   }
 }

@@ -20,15 +20,29 @@ try {
 
 const PORT = process.env.PORT || 3000;
 
+const MIME_TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.svg': 'image/svg+xml'
+};
+
 const server = http.createServer((req, res) => {
-  const filePath = path.join(__dirname, 'index.html');
+  const safeUrl = (req.url || '/').split('?')[0];
+  const relPath = safeUrl === '/' ? 'index.html' : safeUrl.replace(/^\/+/, '');
+  const filePath = path.join(__dirname, path.basename(relPath));
+  const ext = path.extname(filePath).toLowerCase();
+
   fs.readFile(filePath, (err, content) => {
     if (err) {
-      res.writeHead(500);
-      res.end('Erro ao carregar index.html');
+      res.writeHead(404);
+      res.end('Arquivo não encontrado');
       return;
     }
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
     res.end(content);
   });
 });
@@ -97,7 +111,6 @@ if (WebSocketServer) {
         });
       });
 
-    // Comentários do Chat
     tiktokConnection.on('chat', (data) => {
       const comment = (data.comment || '').trim();
       const user = data.uniqueId || data.nickname || 'torcedor';
@@ -108,7 +121,6 @@ if (WebSocketServer) {
       });
     });
 
-    // Presentes (Gifts)
     tiktokConnection.on('gift', (data) => {
       if (data.giftType === 1 && !data.repeatEnd) return;
       const user = data.uniqueId || data.nickname || 'torcedor';
@@ -124,7 +136,6 @@ if (WebSocketServer) {
       });
     });
 
-    // Curtidas (Likes)
     tiktokConnection.on('like', (data) => {
       const user = data.uniqueId || data.nickname || 'torcedor';
       broadcast({
@@ -135,7 +146,6 @@ if (WebSocketServer) {
       });
     });
 
-    // Audiência
     tiktokConnection.on('roomUser', (data) => {
       broadcast({
         type: 'viewers',
@@ -197,7 +207,7 @@ function getLocalIP() {
 server.listen(PORT, '0.0.0.0', () => {
   const ip = getLocalIP();
   console.log('\n======================================================');
-  console.log('🦅 CORRIDA MALUCA: URUBU DO FLOW vs PORCO (TIKTOK LIVE)');
+  console.log('🏆 CORRIDA PELO BRASILEIRÃO: URUBU DO FLOW vs PORCO');
   console.log('======================================================');
   console.log(`💻 Abra no Mac:     http://localhost:${PORT}`);
   console.log(`📱 Abra no Celular: http://${ip}:${PORT}`);
